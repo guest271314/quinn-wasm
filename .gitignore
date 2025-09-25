@@ -8,3 +8,6 @@ SANDBOX
 
 # Cargo lock file (uncomment if you're building a library)
 # Cargo.lock
+
+# Node modules
+node_modules/
