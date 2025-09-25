@@ -1,64 +1,161 @@
-# quinn-wasm-web
+# Quinn-WASM with Direct Sockets API
 
-*Status: Experimental*
+This fork extends quinn-wasm to support the Direct Sockets API, enabling QUIC connections directly from the browser without requiring a WebSocket relay server.
 
-This demo runs the [quinn](https://github.com/quinn-rs/quinn) QUIC
-implementation compiled to WASM in the browser. It forwards UDP packets
-over a WebSocket connection to a relay server, which then sends them out
-to the actual destination. All packets are end-to-end encrpyted between
-browser and the destination QUIC server; the relay cannot read anything.
+## What's Different from Original quinn-wasm
 
-*Caveats:*
+The original quinn-wasm uses a WebSocket relay to forward UDP packets. This version adds support for the Direct Sockets API, which allows direct UDP communication from an Isolated Web App.
 
--   The demo uses self-signed certificates without any checks, so it
-    could be MITM\'ed. This can be mitigated though by either shipping
-    regular WebPKI certificates in the WASM bundle, or using P2P
-    certificates, e.g. like [Iroh Net](https://iroh.computer)
--   This currently needs a few patches to `quinn` and `rustls`. See the
-    [GitHub repo](https://github.com/Frando/quinn-wasm) for details.
--   You likely do not want to run this as-is in production, because it
-    will allow anyone to use your relay server to send any kind of UDP
-    packet to any destination.
+### Key Changes:
 
-## Demotime!
+1. **New `direct_sockets` module** - Implements `AsyncUdpSocket` using Direct Sockets API
+2. **No relay server needed** - Direct UDP communication to QUIC servers
+3. **Isolated Web App support** - Designed to run as an IWA with Direct Sockets permission
 
-A public demo runs [here](https://quinn-wasm.dev.arso.xyz/) currently.
+## Architecture
 
-## Run the demo
-
-Build the WASM library:
 ```
-cd examples/web
-wasm-pack build --target web --debug
-```
-
-Run the relay server:
-```
-cd examples/relay
-cargo run
+┌─────────────────┐
+│  Browser (IWA)  │
+│                 │
+│  Quinn (WASM)   │
+│       ↓         │
+│  Direct Sockets │
+│   UDPSocket     │
+└────────┬────────┘
+         │ UDP
+         ↓
+┌─────────────────┐
+│  QUIC Server    │
+│   (External)    │
+└─────────────────┘
 ```
 
-Run a QUIC server to connect to:
+Compare to original WebSocket relay architecture:
+
 ```
+Browser → WebSocket → Relay Server → UDP → QUIC Server
+```
+
+## Building
+
+### Prerequisites
+
+1. Rust toolchain with wasm32 target:
+   ```bash
+   rustup target add wasm32-unknown-unknown
+   ```
+
+2. wasm-pack:
+   ```bash
+   curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+   ```
+
+### Build Steps
+
+```bash
+# Build the Direct Sockets example
+./build-direct-sockets.sh
+
+# Or manually:
+cd examples/direct-sockets-web
+wasm-pack build --target web --out-dir pkg
+```
+
+## Running as Isolated Web App
+
+### 1. Create Signed Web Bundle
+
+You'll need to create a signed web bundle for the Isolated Web App. The manifest is already configured in `examples/direct-sockets-web/manifest.webmanifest`.
+
+### 2. Install in Chrome
+
+1. Navigate to `chrome://web-app-internals/`
+2. Install the signed web bundle
+3. Launch with Direct Sockets enabled
+
+### 3. Chrome Flags
+
+Launch Chrome with:
+```bash
+chrome --enable-features=DirectSockets
+```
+
+## Testing
+
+### Run QUIC Echo Server
+
+```bash
 cd examples/quic-echo-server
 cargo run
 ```
 
-Then open http://localhost:3000 in a web browser.
-Clicking the **START** button will open a websocket connection to the relay server, create an in-browser QUIC endpoint, and let the relay server forward the QUIC UDP packets to the destinaation server.
+This starts a QUIC server on port 4000 that echoes back messages.
 
-## Patches needed
+### Connect from IWA
 
-* The `wasm32-unknown-unknown` target [does not implement `std::time::Instant` and `std::time::SystemTime`](https://github.com/rust-lang/rust/issues/48564). Therefore, any code that uses these will panic in the browser. There are implementations for these primitives that use the web platform, however there is no way currently to swap the panicking std impls for another impl. The only way is to use feature flags in all dependencies.
-* The `quinn` crate always wants to compile `socket2`, even if the native UDP backend is not used.
+Open the installed Isolated Web App and:
+1. Enter server address: `127.0.0.1:4000`
+2. Type a message
+3. Click "Connect & Send"
 
-These are the branches in use at the demo. If this endavour is deemed worthwhile, I will start to create PRs out of these branches.
+## Implementation Details
 
-* **quinn**: [Frando/quinn#feat-wasm-web](https://github.com/quinn-rs/quinn/compare/main...Frando:quinn:feat-wasm-web)
-  * Put the native UDP implementation in `quinn-udp` behind a on-by-default feature flag
-  * Swap `std::time` to [`web_time`](https://docs.rs/web-time/latest/web_time/) if the `wasm-web` feature is enabled
-* **rustls-pki-types**: [Frando/rustls-pki-types#wasm-web](https://github.com/rustls/pki-types/compare/main...Frando:rustls-pki-types:wasm-web)
-  * Use `web_time` in place of `std::time` when compiling to WASM for the browser (through an optional feature flag `wasm-web`).
-* **rustls**: [Frando/rustls#0.21-wasm](https://github.com/rustls/rustls/compare/v/0.21.10...Frando:rustls:0.21-wasm)
-  * swaps `std::time` to `web_time`. Will not be needed on `0.22` because there all usages are changed to `rustls_pki_types::UnixTime` (which will need a feature flag, see below).
+### Direct Sockets Integration
 
+The `src/direct_sockets.rs` module implements:
+
+- `DirectSocketUdp` - Wrapper around Direct Sockets `UDPSocket`
+- `AsyncUdpSocket` trait implementation for Quinn
+- JavaScript interop using wasm-bindgen
+
+### Certificate Handling
+
+Like the original, this uses a custom certificate verifier that accepts self-signed certificates. For production use, implement proper certificate validation.
+
+### Current Limitations
+
+1. **Isolated Web App only** - Direct Sockets API requires IWA context
+2. **Chrome/Chromium only** - Direct Sockets is a Chrome-specific API
+3. **Experimental status** - Direct Sockets API is still experimental
+4. **Simplified implementation** - Some advanced UDP features not yet implemented
+
+## Differences from WebSocket Relay Approach
+
+| Feature | WebSocket Relay | Direct Sockets |
+|---------|----------------|----------------|
+| Relay Server | Required | Not needed |
+| Latency | Higher (relay hop) | Lower (direct) |
+| Browser Support | Any modern browser | Chrome with IWA |
+| Deployment | Need relay infrastructure | IWA only |
+| Security | Relay sees packet flow | Direct E2E encryption |
+
+## Future Work
+
+- [ ] Complete ReadableStream/WritableStream integration
+- [ ] Add proper error handling for Direct Sockets failures
+- [ ] Implement connection migration support
+- [ ] Add performance benchmarks vs WebSocket relay
+- [ ] Support for bound mode (server-side) UDP sockets
+
+## Security Notes
+
+⚠️ **Important Security Considerations:**
+
+1. This implementation skips certificate validation for testing
+2. Direct Sockets requires explicit user permission via IWA installation
+3. Ensure proper certificate validation for production use
+4. Consider implementing certificate pinning or custom PKI
+
+## Contributing
+
+This is an experimental fork demonstrating Direct Sockets integration. For production use, consider:
+
+1. Completing the Stream API integration
+2. Adding comprehensive error handling
+3. Implementing proper certificate validation
+4. Testing with various QUIC implementations
+
+## Original Project
+
+This is based on [Frando/quinn-wasm](https://github.com/Frando/quinn-wasm), which provides QUIC in the browser using WebSocket relay.

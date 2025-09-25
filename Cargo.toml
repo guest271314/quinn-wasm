@@ -24,17 +24,31 @@ getrandom = { version = "0.2.10", features = ["js", "wasm-bindgen", "js-sys"] }
 ring = { version = "0.17.7", features = ["wasm32_unknown_unknown_js"] }
 # only to enable feature
 rustls-pki-types = { version = "1", features = ["std", "wasm-web"] }
+wasm-bindgen = { version = "0.2.88", optional = true }
+web-sys = { version = "0.3.65", optional = true, features = ["ReadableStream", "WritableStream"] }
+js-sys = { version = "0.3.65", optional = true }
+
+[dev-dependencies]
+criterion = { version = "0.5", features = ["html_reports"] }
+tokio = { version = "1.31.0", features = ["full"] }
+rcgen = "0.11"
+rustls = { version = "0.21", default-features = false, features = ["dangerous_configuration"] }
 
 [features]
 default = ["native"]
 wasm-web = ["wasm-bindgen-futures", "instant/wasm-bindgen"]
+direct-sockets = ["wasm-bindgen", "web-sys", "js-sys", "wasm-bindgen-futures"]
 native = ["tokio/rt", "tokio/time", "quinn/udp-impl"]
 
 [workspace]
-members = ["examples/web", "examples/relay", "examples/quic-echo-server"]
+members = ["examples/web", "examples/relay", "examples/quic-echo-server", "examples/direct-sockets-web"]
 
 [profile.release]
 debug = true
+
+[[bench]]
+name = "wt_vs_ws"
+harness = false
 
 [patch.crates-io]
 rustls-pki-types = { git = "https://github.com/Frando/rustls-pki-types.git", branch = "wasm-web" }

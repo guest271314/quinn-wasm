@@ -1,0 +1,34 @@
+[package]
+name = "quinn-wasm-direct-sockets"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+console_error_panic_hook = "0.1"
+quinn-wasm = { path = "../..", default-features = false, features = ["wasm-web", "direct-sockets"] }
+tracing-wasm = "0.2.1"
+wasm-bindgen = "0.2.88"
+wasm-bindgen-futures = "0.4"
+anyhow = "1.0"
+rustls = { version = "0.21", default-features = false, features = ["dangerous_configuration", "tls12", "quic"] }
+ring = { version = "0.17.7", features = ["wasm32_unknown_unknown_js"] }
+web-time = "0.2.0"
+tracing = "0.1"
+
+[dependencies.web-sys]
+version = "0.3.65"
+features = [
+  "console",
+  "Document",
+  "Element",
+  "HtmlElement",
+  "Window",
+  "ReadableStream",
+  "WritableStream",
+]
+
+[package.metadata.wasm-pack]
+"wasm-opt" = ["-O4"]

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Direct Sockets QUIC Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        h1 { color: #333; }
+        #status div {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f0f0;
+            border-radius: 5px;
+            border-left: 4px solid #ccc;
+        }
+        #status div.success {
+            border-left-color: #4CAF50;
+            background: #e8f5e9;
+        }
+        #status div.error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #1976D2;
+        }
+    </style>
+</head>
+<body>
+    <h1>🚀 Direct Sockets QUIC Test</h1>
+    <p>This Isolated Web App tests Direct Sockets API connectivity to the QUIC echo server.</p>
+
+    <div id="status">
+        <div>Initializing...</div>
+    </div>
+
+    <button onclick="testDirectSockets()">Test Direct Sockets</button>
+    <button onclick="location.reload()">Refresh</button>
+
+    <script src="test-direct-sockets.js"></script>
+</body>
+</html>

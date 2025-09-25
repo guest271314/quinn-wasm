@@ -1,0 +1,24 @@
+{
+  "name": "Direct Sockets QUIC Test",
+  "short_name": "QUIC Direct",
+  "description": "Test application for QUIC over Direct Sockets API",
+  "version": "1.0.0",
+  "manifest_version": 3,
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2196F3",
+  "permissions": [
+    "direct-sockets"
+  ],
+  "isolated_app": {
+    "signed_web_bundle_id": "will-be-generated"
+  },
+  "icons": [
+    {
+      "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

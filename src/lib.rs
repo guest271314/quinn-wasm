@@ -24,6 +24,9 @@ pub use quinn;
 
 mod runtime;
 
+#[cfg(feature = "direct-sockets")]
+pub mod direct_sockets;
+
 pub async fn create_endpoint<S: AsRef<str>>(
     url: S,
     local_addr: SocketAddr,

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "base32-encode": "^2.0.0",
+    "wbn": "^0.0.9"
+  }
+}

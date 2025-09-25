@@ -1,2 +1,10 @@
 /rust_target
 SANDBOX
+
+# Rust build artifacts
+/target/
+**/*.rs.bk
+*.pdb
+
+# Cargo lock file (uncomment if you're building a library)
+# Cargo.lock
