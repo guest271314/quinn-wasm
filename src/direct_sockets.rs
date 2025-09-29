@@ -1,7 +1,6 @@
 use std::io::ErrorKind;
 use std::pin::Pin;
 use std::sync::Mutex;
-use std::task::ready;
 use std::{
     fmt,
     io::{self, IoSliceMut},
@@ -9,9 +8,6 @@ use std::{
     sync::Arc,
     task::{Context, Poll},
 };
-
-use bytes::Bytes;
-use futures_util::{Stream, StreamExt};
 use quinn::{
     udp::{RecvMeta, Transmit},
     AsyncUdpSocket, ClientConfig, Endpoint, ServerConfig,
@@ -69,21 +65,24 @@ pub async fn create_direct_socket_endpoint(
         &options,
         &JsValue::from_str("localAddress"),
         &JsValue::from_str(&local_addr.ip().to_string()),
-    )?;
+    ).map_err(|e| anyhow::anyhow!("Failed to set localAddress: {:?}", e))?;
     js_sys::Reflect::set(
         &options,
         &JsValue::from_str("localPort"),
         &JsValue::from(local_addr.port()),
-    )?;
+    ).map_err(|e| anyhow::anyhow!("Failed to set localPort: {:?}", e))?;
 
     // Create UDP socket
     let udp_socket = UDPSocket::new(&options.into());
 
     // Wait for socket to open
-    let opened = JsFuture::from(udp_socket.opened()).await?;
-    let streams: UDPSocketStreams = opened.dyn_into()?;
+    let opened = JsFuture::from(udp_socket.opened()).await
+        .map_err(|e| anyhow::anyhow!("Failed to open socket: {:?}", e))?;
+    let streams: UDPSocketStreams = opened.dyn_into()
+        .map_err(|e| anyhow::anyhow!("Failed to convert to UDPSocketStreams: {:?}", e))?;
 
-    let socket = Arc::new(DirectSocketUdp::new(streams, local_addr)?);
+    let socket = Arc::new(DirectSocketUdp::new(streams, local_addr)
+        .map_err(|e| anyhow::anyhow!("Failed to create DirectSocketUdp: {:?}", e))?);
     let runtime = Arc::new(crate::runtime::JsRuntime);
 
     let mut endpoint =
@@ -150,7 +149,7 @@ impl DirectSocketUdp {
         ).map_err(|e| io::Error::new(ErrorKind::Other, format!("{:?}", e)))?;
 
         // Write to the writable stream
-        let writable = self.writable.lock().unwrap();
+        let _writable = self.writable.lock().unwrap();
         // Note: Actual writing implementation would require more complex JavaScript interop
         // This is a simplified version showing the structure
 
@@ -169,7 +168,7 @@ impl AsyncUdpSocket for DirectSocketUdp {
 
     fn poll_send(
         &self,
-        cx: &mut Context,
+        _cx: &mut Context,
         transmits: &[Transmit],
     ) -> Poll<Result<usize, io::Error>> {
         debug!("DirectSocket: sending {} transmits", transmits.len());
@@ -200,9 +199,9 @@ impl AsyncUdpSocket for DirectSocketUdp {
 
     fn poll_recv(
         &self,
-        cx: &mut Context,
-        bufs: &mut [IoSliceMut<'_>],
-        meta: &mut [RecvMeta],
+        _cx: &mut Context,
+        _bufs: &mut [IoSliceMut<'_>],
+        _meta: &mut [RecvMeta],
     ) -> Poll<io::Result<usize>> {
         // Note: This would need proper integration with ReadableStream
         // to read incoming UDP messages
