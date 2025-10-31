@@ -1,0 +1,20 @@
+{
+  "id": "/",
+  "name": "Direct Sockets QUIC Test",
+  "short_name": "QUIC Direct",
+  "description": "Test application for QUIC over Direct Sockets API",
+  "version": "1.0.0",
+  "start_url": "/",
+  "display": "standalone",
+  "scope": "/",
+  "permissions_policy": {
+    "cross-origin-isolated": ["self"],
+    "direct-sockets": ["self"],
+    "direct-sockets-private": ["self"]
+  },
+  "icons": [{
+    "src": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAJAAAACQCAYAAADnRuK4AAAAAXNSR0IArs4c6QAAAmxJREFUeF7t0rENAAAMwrDy/9M9IqvZWSLvTIFQYOHrqsABBEEqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzOADGQCgCU8jkDxEAqAFDK5wwQA6kAQCmfM0AMpAIApXzODzTLAJEg2OWPAAAAAElFTkSuQmCC",
+    "sizes": "144x144",
+    "type": "image/png"
+  }]
+}

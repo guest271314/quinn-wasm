@@ -66,7 +66,25 @@ wasm-pack build --target web --out-dir pkg
 
 ### 1. Create Signed Web Bundle
 
-You'll need to create a signed web bundle for the Isolated Web App. The manifest is already configured in `examples/direct-sockets-web/manifest.webmanifest`.
+You'll need to create a signed web bundle for the Isolated Web App. The manifest is already configured in `examples/direct-sockets-web/.well-known/manifest.webmanifest`.
+
+
+#### Node.js
+
+   ```js
+   node bundle-iwa.js
+   ```
+
+#### Deno
+   ```js
+   DENO_COMPAT=1 deno -A bundle-iwa.js
+   ```
+
+#### Bun
+
+   ```js
+   bun bundle-iwa.js
+   ```
 
 ### 2. Install in Chrome
 

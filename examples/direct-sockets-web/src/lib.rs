@@ -19,7 +19,7 @@ pub async fn connect_quic_direct_sockets(
     info!(?quic_host, ?message, "Connecting to QUIC using Direct Sockets!");
 
     let remote_addr: SocketAddr = quic_host.parse()?;
-    let local_addr: SocketAddr = "0.0.0.0:0".parse()?;
+    let local_addr: SocketAddr = "0.0.0.0:8081".parse()?;
     let client_config = configure_client();
 
     // Use Direct Sockets instead of WebSocket relay
